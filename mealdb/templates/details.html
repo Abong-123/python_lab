@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if meal %}{{ meal.strMeal }}{% else %}Meal Detail{% endif %} — Meal Finder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#FAF6F0',
+                        warm: '#F5EDE0',
+                        rust: '#C4522A',
+                        ember: '#E8824A',
+                        bark: '#5C3D2E',
+                        mist: '#E8DDD4',
+                    },
+                    fontFamily: {
+                        display: ['Playfair Display', 'serif'],
+                        body: ['DM Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #FAF6F0; font-family: 'DM Sans', sans-serif; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp 0.5s ease forwards; }
+        .fade-up-2 { animation: fadeUp 0.5s ease 0.1s forwards; opacity: 0; }
+        .fade-up-3 { animation: fadeUp 0.5s ease 0.2s forwards; opacity: 0; }
+
+        .ingredient-row:hover { background-color: #F5EDE0; }
+
+        .instruction-text {
+            white-space: pre-line;
+            line-height: 1.9;
+        }
+
+        /* Numbered steps auto-formatting */
+        .step-block {
+            counter-increment: steps;
+            position: relative;
+            padding-left: 2.5rem;
+        }
+        .step-block::before {
+            content: counter(steps);
+            position: absolute;
+            left: 0;
+            top: 2px;
+            width: 1.6rem;
+            height: 1.6rem;
+            background: #C4522A;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .steps-wrapper { counter-reset: steps; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- ── NAVBAR ── -->
+    <nav class="sticky top-0 z-50 bg-cream/90 backdrop-blur-sm border-b border-mist">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="/" class="font-display text-2xl font-bold text-bark tracking-tight">
+                Meal<span class="text-rust">.</span>Finder
+            </a>
+            <div class="flex items-center gap-3">
+                <a href="/" class="text-bark/60 hover:text-bark text-sm transition-colors">← Back</a>
+                {% if meal %}
+                <a href="/meal/{{ meal.idMeal }}/pdf"
+                    class="flex items-center gap-2 bg-rust hover:bg-bark transition-colors text-cream px-4 py-2 rounded-full text-sm font-medium">
+                    ⬇️ Download PDF
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {% if meal %}
+
+    <!-- ── HERO IMAGE ── -->
+    <div class="relative h-72 md:h-96 overflow-hidden fade-up">
+        <img src="{{ meal.strMealThumb }}" alt="{{ meal.strMeal }}"
+            class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-bark/80 via-bark/20 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-wrap gap-2 mb-3">
+                    <span class="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full border border-white/30">
+                        {{ meal.strCategory }}
+                    </span>
+                    <span class="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full border border-white/30">
+                        🌍 {{ meal.strArea }}
+                    </span>
+                    {% if meal.strTags %}
+                    {% for tag in meal.strTags.split(',') %}
+                    <span class="bg-rust/80 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">
+                        {{ tag.strip() }}
+                    </span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                <h1 class="font-display text-3xl md:text-5xl font-bold text-white leading-tight">
+                    {{ meal.strMeal }}
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CONTENT ── -->
+    <main class="max-w-6xl mx-auto px-4 py-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- ── LEFT: Ingredients ── -->
+            <aside class="lg:col-span-1 fade-up-2">
+                <div class="bg-white rounded-3xl border border-mist shadow-sm overflow-hidden sticky top-20">
+                    <div class="bg-bark p-5">
+                        <h2 class="font-display text-xl font-bold text-cream">Ingredients</h2>
+                        <p class="text-cream/50 text-xs mt-1">Everything you'll need</p>
+                    </div>
+                    <div class="divide-y divide-mist">
+                        {% for i in range(1, 21) %}
+                            {% set ingredient = meal["strIngredient" ~ i] %}
+                            {% set measure = meal["strMeasure" ~ i] %}
+                            {% if ingredient and ingredient.strip() %}
+                            <div class="ingredient-row flex items-center justify-between px-5 py-3 transition-colors cursor-default">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://www.themealdb.com/images/ingredients/{{ ingredient }}-Small.png"
+                                        alt="{{ ingredient }}"
+                                        class="w-8 h-8 object-contain rounded-lg bg-warm"
+                                        onerror="this.style.display='none'">
+                                    <span class="text-bark text-sm font-medium">{{ ingredient }}</span>
+                                </div>
+                                <span class="text-bark/50 text-xs text-right ml-2">{{ measure }}</span>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <!-- Source links -->
+                    <div class="p-4 bg-warm/50 flex flex-col gap-2">
+                        {% if meal.strYoutube %}
+                        <a href="{{ meal.strYoutube }}" target="_blank"
+                            class="flex items-center gap-2 text-rust hover:text-bark transition-colors text-sm font-medium">
+                            ▶️ Watch on YouTube
+                        </a>
+                        {% endif %}
+                        {% if meal.strSource %}
+                        <a href="{{ meal.strSource }}" target="_blank"
+                            class="flex items-center gap-2 text-rust hover:text-bark transition-colors text-sm font-medium">
+                            🔗 Original Source
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </aside>
+
+            <!-- ── RIGHT: Instructions ── -->
+            <div class="lg:col-span-2 fade-up-3">
+
+                <!-- Instructions -->
+                <div class="bg-white rounded-3xl border border-mist shadow-sm p-7 md:p-9">
+                    <h2 class="font-display text-2xl font-bold text-bark mb-1">Instructions</h2>
+                    <p class="text-bark/40 text-sm mb-6">Follow these steps carefully</p>
+                    <div class="divider mb-6" style="background: linear-gradient(90deg, #C4522A, transparent); height:1px;"></div>
+                    <div class="text-bark/80 text-sm instruction-text leading-loose">
+                        {{ meal.strInstructions }}
+                    </div>
+                </div>
+
+                <!-- Download CTA -->
+                <div class="mt-6 bg-bark rounded-3xl p-7 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-cream mb-1">Save this recipe</h3>
+                        <p class="text-cream/50 text-sm">Download as PDF to cook offline anytime.</p>
+                    </div>
+                    <a href="/meal/{{ meal.idMeal }}/pdf"
+                        class="flex-shrink-0 bg-rust hover:bg-ember transition-colors text-white px-6 py-3 rounded-full font-medium text-sm whitespace-nowrap">
+                        ⬇️ Download PDF
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    {% else %}
+
+    <!-- ── NOT FOUND ── -->
+    <div class="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+        <p class="text-6xl mb-4">🍽️</p>
+        <h2 class="font-display text-3xl font-bold text-bark mb-2">Meal Not Found</h2>
+        <p class="text-bark/50 mb-6">We couldn't find this recipe.</p>
+        <a href="/" class="bg-rust text-cream px-6 py-3 rounded-full hover:bg-bark transition-colors font-medium text-sm">
+            ← Back to Home
+        </a>
+    </div>
+
+    {% endif %}
+
+    <!-- ── FOOTER ── -->
+    <footer class="mt-16 border-t border-mist py-8 text-center text-bark/40 text-xs font-body">
+        Powered by <a href="https://www.themealdb.com" class="text-rust hover:underline">TheMealDB</a>
+    </footer>
+
+</body>
+</html>

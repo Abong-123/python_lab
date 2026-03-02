@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Finder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#FAF6F0',
+                        warm: '#F5EDE0',
+                        rust: '#C4522A',
+                        ember: '#E8824A',
+                        bark: '#5C3D2E',
+                        mist: '#E8DDD4',
+                    },
+                    fontFamily: {
+                        display: ['Playfair Display', 'serif'],
+                        body: ['DM Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #FAF6F0; font-family: 'DM Sans', sans-serif; }
+
+        .hero-grain {
+            background-image:
+                radial-gradient(ellipse at 20% 50%, rgba(196,82,42,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(232,130,74,0.10) 0%, transparent 50%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .card-hover:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(92,61,46,0.15);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23C4522A' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px !important;
+        }
+
+        .meal-card img {
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .meal-card:hover img { transform: scale(1.07); }
+
+        .divider {
+            background: linear-gradient(90deg, transparent, #C4522A, transparent);
+            height: 1px;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp 0.6s ease forwards; }
+        .fade-up-delay { animation: fadeUp 0.6s ease 0.15s forwards; opacity: 0; }
+        .fade-up-delay-2 { animation: fadeUp 0.6s ease 0.3s forwards; opacity: 0; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- ── NAVBAR ── -->
+    <nav class="sticky top-0 z-50 bg-cream/90 backdrop-blur-sm border-b border-mist">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="/" class="font-display text-2xl font-bold text-bark tracking-tight">
+                Meal<span class="text-rust">.</span>Finder
+            </a>
+            <a href="/random" class="flex items-center gap-2 bg-rust text-cream px-4 py-2 rounded-full text-sm font-medium hover:bg-bark transition-colors">
+                🎲 Random Meal
+            </a>
+        </div>
+    </nav>
+
+    <!-- ── HERO ── -->
+    <header class="hero-grain py-16 md:py-24">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p class="text-rust text-sm font-medium tracking-widest uppercase mb-3 fade-up">Discover Your Next Favorite</p>
+            <h1 class="font-display text-5xl md:text-7xl font-black text-bark leading-none mb-6 fade-up-delay">
+                Find Any<br><em class="text-rust not-italic">Recipe</em> You Crave
+            </h1>
+            <p class="text-bark/60 text-lg max-w-md mx-auto mb-10 fade-up-delay-2">Search thousands of recipes by name, ingredient, country, or category.</p>
+
+            <!-- Search Bar -->
+            <form action="/search" method="get" class="fade-up-delay-2">
+                <div class="flex max-w-xl mx-auto bg-white rounded-2xl shadow-lg shadow-bark/10 overflow-hidden border border-mist">
+                    <input type="text" name="query"
+                        placeholder="Search meals... e.g. Pasta, Chicken"
+                        class="flex-1 px-5 py-4 text-bark bg-transparent outline-none placeholder-bark/40 font-body">
+                    <button type="submit" class="bg-rust hover:bg-bark transition-colors text-cream px-6 py-4 font-medium">
+                        Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </header>
+
+    <!-- ── FILTERS ── -->
+    <section class="max-w-6xl mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <!-- Ingredient -->
+            <form action="/filter/ingredient" method="get"
+                class="flex bg-white rounded-xl border border-mist overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <span class="flex items-center pl-4 text-xl">🥕</span>
+                <input type="text" name="ingredient"
+                    placeholder="Filter by ingredient..."
+                    class="flex-1 px-3 py-3 text-sm text-bark bg-transparent outline-none placeholder-bark/40">
+                <button type="submit" class="bg-ember hover:bg-rust transition-colors text-white px-4 text-sm font-medium">
+                    Go
+                </button>
+            </form>
+
+            <!-- Country -->
+            {% if areas %}
+            <form action="/filter/country" method="get"
+                class="flex bg-white rounded-xl border border-mist overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <span class="flex items-center pl-4 text-xl">🌍</span>
+                <select name="country"
+                    class="flex-1 px-3 py-3 text-sm text-bark bg-transparent outline-none cursor-pointer">
+                    {% for area in areas %}
+                        <option value="{{ area.strArea }}">{{ area.strArea }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="bg-ember hover:bg-rust transition-colors text-white px-4 text-sm font-medium">
+                    Go
+                </button>
+            </form>
+            {% endif %}
+
+            <!-- Category -->
+            {% if categories %}
+            <form action="/filter/category" method="get"
+                class="flex bg-white rounded-xl border border-mist overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <span class="flex items-center pl-4 text-xl">📂</span>
+                <select name="category"
+                    class="flex-1 px-3 py-3 text-sm text-bark bg-transparent outline-none cursor-pointer">
+                    {% for cat in categories %}
+                        <option value="{{ cat.strCategory }}">{{ cat.strCategory }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="bg-ember hover:bg-rust transition-colors text-white px-4 text-sm font-medium">
+                    Go
+                </button>
+            </form>
+            {% endif %}
+
+        </div>
+    </section>
+
+    <!-- ── DIVIDER ── -->
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="divider"></div>
+    </div>
+
+    <!-- ── RANDOM MEAL ── -->
+    {% if meal %}
+    <section class="max-w-6xl mx-auto px-4 py-12">
+        <p class="text-rust text-xs font-medium tracking-widest uppercase mb-2">✨ Today's Pick</p>
+        <h2 class="font-display text-3xl font-bold text-bark mb-8">Random Meal</h2>
+        <div class="bg-white rounded-3xl overflow-hidden border border-mist shadow-lg shadow-bark/10 flex flex-col md:flex-row">
+            <div class="md:w-1/2 overflow-hidden">
+                <img src="{{ meal.strMealThumb }}" alt="{{ meal.strMeal }}"
+                    class="w-full h-64 md:h-full object-cover hover:scale-105 transition-transform duration-500">
+            </div>
+            <div class="md:w-1/2 p-8 flex flex-col justify-center">
+                <div class="flex gap-2 mb-4">
+                    <span class="bg-warm text-bark text-xs px-3 py-1 rounded-full font-medium">{{ meal.strCategory }}</span>
+                    <span class="bg-warm text-bark text-xs px-3 py-1 rounded-full font-medium">{{ meal.strArea }}</span>
+                </div>
+                <h3 class="font-display text-3xl font-bold text-bark mb-4">{{ meal.strMeal }}</h3>
+                <p class="text-bark/60 text-sm mb-6 leading-relaxed">
+                    {{ meal.strInstructions[:200] }}...
+                </p>
+                <a href="/meal/{{ meal.idMeal }}"
+                    class="self-start bg-rust hover:bg-bark transition-colors text-cream px-6 py-3 rounded-full font-medium text-sm">
+                    See Full Recipe →
+                </a>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- ── SEARCH RESULTS ── -->
+    {% if meals %}
+    <section class="max-w-6xl mx-auto px-4 py-12">
+        <div class="flex items-baseline gap-3 mb-8">
+            <h2 class="font-display text-3xl font-bold text-bark">
+                {% if query %}Results for <em class="text-rust">"{{ query }}"</em>{% else %}Results{% endif %}
+            </h2>
+            <span class="text-bark/40 text-sm">{{ meals|length }} found</span>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {% for m in meals %}
+            <a href="/meal/{{ m.idMeal }}"
+                class="meal-card card-hover bg-white rounded-2xl overflow-hidden border border-mist shadow-sm group block">
+                <div class="overflow-hidden aspect-square">
+                    <img src="{{ m.strMealThumb }}/preview" alt="{{ m.strMeal }}"
+                        class="w-full h-full object-cover">
+                </div>
+                <div class="p-3">
+                    <p class="text-bark font-medium text-sm leading-snug group-hover:text-rust transition-colors line-clamp-2">
+                        {{ m.strMeal }}
+                    </p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- ── EMPTY STATE ── -->
+    {% if not meal and not meals %}
+    <section class="max-w-6xl mx-auto px-4 py-20 text-center">
+        <p class="text-6xl mb-4">🍽️</p>
+        <h2 class="font-display text-2xl font-bold text-bark mb-2">What are you craving?</h2>
+        <p class="text-bark/50 text-sm">Search by name, filter by ingredient, country or category above.</p>
+    </section>
+    {% endif %}
+
+    <!-- ── FOOTER ── -->
+    <footer class="mt-16 border-t border-mist py-8 text-center text-bark/40 text-xs font-body">
+        Powered by <a href="https://www.themealdb.com" class="text-rust hover:underline">TheMealDB</a>
+    </footer>
+
+</body>
+</html>
