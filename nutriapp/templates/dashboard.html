@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="../static/css/dashboard.css">
 </head>
 <body>
-
     <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-container">
@@ -88,50 +87,72 @@
                     <button class="action-btn">Lihat</button>
                 </div>
 
+                {% if user.role.value == 'ahli_gizi' or user.role.value == 'admin' %}
+                <div class="action-card">
+                    <div class="action-icon">🥗</div>
+                    <h3 class="action-title">Input Bahan Makanan</h3>
+                    <p class="action-desc">Tambahkan data nutrisi bahan makanan baru</p>
+                    <a href="/nutrisi/input">
+                        <button class="action-btn">Input Bahan</button>
+                    </a>
+                </div>
+                {% else %}
                 <div class="action-card">
                     <div class="action-icon">🏅</div>
                     <h3 class="action-title">Daftar Lencana</h3>
                     <p class="action-desc">Dapatkan lencana dengan input data gizi</p>
-                    <button class="action-btn">Daftar</button>
+                    <a href="/nutrisi/input">
+                        <button class="action-btn">Daftar</button>
+                    </a>
                 </div>
+                {% endif %}
             </div>
 
             <!-- Section: Input Bahan Makanan (untuk lencana gizi) -->
-            <div class="section-header">
-                <h2 class="section-title">Input Bahan Makanan</h2>
-                <p class="section-subtitle">Dapatkan lencana gizi dengan melengkapi data bahan makanan</p>
-            </div>
-
-            <div class="input-grid">
-                <div class="input-card">
-                    <div class="input-card-icon">🥕</div>
-                    <h3 class="input-card-title">Sayuran</h3>
-                    <p class="input-card-desc">Input data gizi sayuran</p>
-                    <button class="input-card-btn">Input</button>
+            {% if user.role.value not in ['normal'] %}
+                <div class="section-header">
+                    <h2 class="section-title">Input Bahan Makanan</h2>
+                    <p class="section-subtitle">Dapatkan lencana gizi dengan melengkapi data bahan makanan</p>
                 </div>
 
-                <div class="input-card">
-                    <div class="input-card-icon">🍎</div>
-                    <h3 class="input-card-title">Buah-buahan</h3>
-                    <p class="input-card-desc">Input data gizi buah</p>
-                    <button class="input-card-btn">Input</button>
-                </div>
+                <div class="input-grid">
+                    <div class="input-card">
+                        <div class="input-card-icon">🥕</div>
+                        <h3 class="input-card-title">Sayuran</h3>
+                        <p class="input-card-desc">Input data gizi sayuran</p>
+                        <a href="/nutrisi/input">
+                            <button class="input-card-btn">Input</button>
+                        </a>
+                    </div>
 
-                <div class="input-card">
-                    <div class="input-card-icon">🥩</div>
-                    <h3 class="input-card-title">Protein</h3>
-                    <p class="input-card-desc">Input data gizi protein</p>
-                    <button class="input-card-btn">Input</button>
-                </div>
+                    <div class="input-card">
+                        <div class="input-card-icon">🍎</div>
+                        <h3 class="input-card-title">Buah-buahan</h3>
+                        <p class="input-card-desc">Input data gizi buah</p>
+                        <a href="/nutrisi/input">
+                            <button class="input-card-btn">Input</button>
+                        </a>
+                    </div>
 
-                <div class="input-card">
-                    <div class="input-card-icon">🌾</div>
-                    <h3 class="input-card-title">Karbohidrat</h3>
-                    <p class="input-card-desc">Input data gizi karbohidrat</p>
-                    <button class="input-card-btn">Input</button>
-                </div>
-            </div>
+                    <div class="input-card">
+                        <div class="input-card-icon">🥩</div>
+                        <h3 class="input-card-title">Protein</h3>
+                        <p class="input-card-desc">Input data gizi protein</p>
+                        <a href="/nutrisi/input">
+                            <button class="input-card-btn">Input</button>
+                        </a>
+                    </div>
 
+                    <div class="input-card">
+                        <div class="input-card-icon">🌾</div>
+                        <h3 class="input-card-title">Karbohidrat</h3>
+                        <p class="input-card-desc">Input data gizi karbohidrat</p>
+                        <a href="/nutrisi/input">
+                            <button class="input-card-btn">Input</button>
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </main>
 

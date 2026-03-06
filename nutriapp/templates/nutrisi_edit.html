@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Bahan - NutriApp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/edit_nutrisi.css') }}">
+</head>
+<body class="bg-gradient-to-br from-white to-slate-50 min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-40 border-b border-slate-200 backdrop-blur-xl bg-white/80">
+        <div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+            <a href="/dashboard" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div class="w-6 h-6 rounded-md bg-sky-500 flex items-center justify-center">
+                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </div>
+                <span class="font-mono text-sky-500 text-xs font-medium tracking-widest uppercase">NutriApp</span>
+            </a>
+            <a href="/nutrisi/{{ nutrisi.id }}" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Kembali
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-3xl mx-auto px-4 py-8">
+
+        <!-- Header -->
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
+                <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-800">Edit Bahan Makanan</h1>
+                <p class="text-slate-500 text-xs">{{ nutrisi.nama }}</p>
+            </div>
+        </div>
+
+        <!-- Error Alert -->
+        {% if error %}
+        <div class="mb-5 flex items-center gap-3 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Form -->
+        <form method="post" action="/nutrisi/{{ nutrisi.id }}/edit" class="space-y-5">
+
+            <!-- Informasi Dasar -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Informasi Dasar</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Nama Bahan <span class="text-red-400">*</span></label>
+                        <input
+                            type="text" name="nama" required
+                            value="{{ nutrisi.nama }}"
+                            class="w-full px-4 py-3 text-sm border border-slate-300 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Jumlah (gram)</label>
+                        <input
+                            type="number" name="amount" step="0.1" min="0.1"
+                            value="{{ nutrisi.amount }}"
+                            class="w-full px-4 py-3 text-sm border border-slate-300 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Makronutrien -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Makronutrien</h2>
+                <p class="text-xs text-slate-500 mb-4">Per jumlah yang ditentukan di atas</p>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- Kalori -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Kalori</label>
+                        <div class="relative">
+                            <input type="number" name="kalori" step="0.1" min="0"
+                                value="{{ nutrisi.kalori if nutrisi.kalori else '' }}"
+                                placeholder="0"
+                                class="w-full px-4 py-3 pr-14 text-sm border border-slate-300 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all"/>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-slate-400">kkal</span>
+                        </div>
+                    </div>
+
+                    <!-- Karbohidrat -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Karbohidrat</label>
+                        <div class="relative">
+                            <input type="number" name="karbohidrat" step="0.1" min="0"
+                                value="{{ nutrisi.karbohidrat if nutrisi.karbohidrat else '' }}"
+                                placeholder="0"
+                                class="w-full px-4 py-3 pr-8 text-sm border border-slate-300 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all"/>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-slate-400">g</span>
+                        </div>
+                    </div>
+
+                    <!-- Protein -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Protein</label>
+                        <div class="relative">
+                            <input type="number" name="protein" step="0.1" min="0"
+                                value="{{ nutrisi.protein if nutrisi.protein else '' }}"
+                                placeholder="0"
+                                class="w-full px-4 py-3 pr-8 text-sm border border-slate-300 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all"/>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-slate-400">g</span>
+                        </div>
+                    </div>
+
+                    <!-- Lemak -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Lemak</label>
+                        <div class="relative">
+                            <input type="number" name="lemak" step="0.1" min="0"
+                                value="{{ nutrisi.lemak if nutrisi.lemak else '' }}"
+                                placeholder="0"
+                                class="w-full px-4 py-3 pr-8 text-sm border border-slate-300 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all"/>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-slate-400">g</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mikronutrien -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Mikronutrien</h2>
+                <p class="text-xs text-slate-500 mb-4">Opsional</p>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <!-- Serat -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Serat</label>
+                        <div class="relative">
+                            <input type="number" name="serat" step="0.1" min="0"
+                                value="{{ nutrisi.serat if nutrisi.serat else '' }}"
+                                placeholder="0"
+                                class="w-full px-4 py-3 pr-8 text-sm border border-slate-300 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all"/>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-slate-400">g</span>
+                        </div>
+                    </div>
+
+                    <!-- Sodium -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Sodium</label>
+                        <div class="relative">
+                            <input type="number" name="sodium" step="0.1" min="0"
+                                value="{{ nutrisi.sodium if nutrisi.sodium else '' }}"
+                                placeholder="0"
+                                class="w-full px-4 py-3 pr-10 text-sm border border-slate-300 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all"/>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-slate-400">mg</span>
+                        </div>
+                    </div>
+
+                    <!-- Kalium -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Kalium</label>
+                        <div class="relative">
+                            <input type="number" name="kalium" step="0.1" min="0"
+                                value="{{ nutrisi.kalium if nutrisi.kalium else '' }}"
+                                placeholder="0"
+                                class="w-full px-4 py-3 pr-10 text-sm border border-slate-300 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all"/>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-slate-400">mg</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                <a href="/nutrisi/{{ nutrisi.id }}" 
+                   class="flex-1 text-center py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-sm transition-all">
+                    Batal
+                </a>
+                <button type="submit" 
+                        class="flex-1 py-3 px-4 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl text-sm transition-all shadow-sm hover:shadow">
+                    Simpan Perubahan
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <p class="font-mono text-center text-slate-400 text-xs pb-8">v1.0 · NutriApp © 2025</p>
+
+</body>
+</html>

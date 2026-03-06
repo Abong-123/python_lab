@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float, Uni
 from sqlalchemy.orm import relationship
 from database import Base
 from sqlalchemy import Enum
+from datetime import datetime
 import enum
 
 class UserRole(enum.Enum):
@@ -72,7 +73,7 @@ class Nutrisi(Base):
     serat = Column(Float, nullable=True)
     sodium = Column(Float, nullable=True)
     kalium = Column(Float, nullable=True)
-    
+
     amount = Column(Float, default=100 ,nullable=False)
 
     user = relationship("User", back_populates="nutrisi")
@@ -98,8 +99,8 @@ class MealPlan(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     resep_id = Column(Integer, ForeignKey("reseps.id"), nullable=False)
 
-    tanggal = Column(Date, nullable=False)
-    meal_type = Column(Enum(MealType), nullable=False)
+    tanggal = Column(Date, nullable=False, index=True)
+    meal_type = Column(Enum(MealType, name="mealtype", create_type=False), nullable=False)
 
     user = relationship("User")
     resep = relationship("Resep")

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Daftar Resep</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+<div class="max-w-6xl mx-auto py-10">
+
+<h1 class="text-3xl font-bold mb-6">Daftar Resep</h1>
+
+<div class="grid grid-cols-3 gap-6">
+
+{% for r in reseps %}
+
+<a href="/resep/{{ r.id }}" class="bg-white rounded-xl shadow hover:shadow-lg transition">
+
+{% if r.foto %}
+<img src="{{ r.foto }}" class="w-full h-40 object-cover rounded-t-xl">
+{% endif %}
+
+<div class="p-4">
+
+<h2 class="font-semibold text-lg">{{ r.nama }}</h2>
+
+<p class="text-gray-600 text-sm mt-2">
+{{ r.deskripsi[:100] }}...
+</p>
+
+</div>
+
+</a>
+
+{% endfor %}
+
+</div>
+</div>
+
+</body>
+</html>

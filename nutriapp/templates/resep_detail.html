@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{ resep.nama }}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+<div class="max-w-3xl mx-auto py-10">
+
+<a href="/resep" class="text-blue-500 mb-4 inline-block">
+← Kembali
+</a>
+
+<div class="bg-white rounded-xl shadow p-6">
+
+{% if resep.foto %}
+<img src="{{ resep.foto }}" class="w-full h-64 object-cover rounded-lg mb-4">
+{% endif %}
+
+<h1 class="text-3xl font-bold mb-2">{{ resep.nama }}</h1>
+
+<p class="text-gray-600 mb-6">{{ resep.deskripsi }}</p>
+
+<h2 class="font-semibold text-xl mt-4">Bahan</h2>
+
+<p class="text-gray-700 whitespace-pre-line">
+{{ resep.bahan }}
+</p>
+
+<h2 class="font-semibold text-xl mt-6">Cara Memasak</h2>
+
+<p class="text-gray-700 whitespace-pre-line">
+{{ resep.cara_memasak }}
+</p>
+
+<div class="mt-6 border-t pt-4">
+
+<h3 class="font-semibold mb-2">Informasi Nutrisi</h3>
+
+<ul class="text-sm text-gray-700">
+
+<li>Kalori: {{ resep.kalori }}</li>
+<li>Protein: {{ resep.protein }} g</li>
+<li>Karbohidrat: {{ resep.karbohidrat }} g</li>
+<li>Lemak: {{ resep.lemak }} g</li>
+
+</ul>
+
+</div>
+
+</div>
+</div>
+
+</body>
+</html>

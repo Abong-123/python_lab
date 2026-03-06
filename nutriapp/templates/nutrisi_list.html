@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Bahan - NutriApp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/nutrisi.css">
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-white min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-40 border-b border-slate-200 backdrop-blur-xl bg-white/80">
+        <div class="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+            <a href="/dashboard" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div class="w-6 h-6 rounded-md bg-sky-500 flex items-center justify-center">
+                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </div>
+                <span class="font-mono text-sky-500 text-xs font-medium tracking-widest uppercase">NutriApp</span>
+            </a>
+            
+            {% if user.role.value in ['ahli_gizi', 'admin'] %}
+            <a href="/nutrisi/input" class="inline-flex items-center gap-2 px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 4v16m8-8H4"/>
+                </svg>
+                Tambah Bahan
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 py-8">
+
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+                <h1 class="text-xl font-bold text-slate-800">Daftar Bahan Makanan</h1>
+                <p class="text-slate-500 text-sm mt-0.5">{{ nutrisis | length }} bahan tersedia</p>
+            </div>
+            
+            <!-- Search -->
+            <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input
+                    type="text" id="search"
+                    placeholder="Cari bahan..."
+                    class="pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all w-full sm:w-64"
+                    oninput="filterBahan(this.value)"
+                />
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        {% if not nutrisis %}
+        <div class="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-sm">
+            <div class="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                </svg>
+            </div>
+            <p class="text-slate-600 font-medium mb-1">Belum ada bahan makanan</p>
+            <p class="text-slate-400 text-sm mb-4">Jadilah yang pertama menambahkan!</p>
+            
+            {% if user.role.value in ['ahli_gizi', 'admin'] %}
+            <a href="/nutrisi/input" class="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow">
+                + Tambah Bahan
+            </a>
+            {% endif %}
+        </div>
+
+        {% else %}
+
+        <!-- Grid List -->
+        <div id="nutrisi-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for n in nutrisis %}
+            <a href="/nutrisi/{{ n.id }}" class="nutrisi-item bg-white border border-slate-200 hover:border-sky-200 rounded-2xl p-5 block transition-all hover:shadow-md hover:-translate-y-1">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </div>
+                    <span class="font-mono text-xs text-slate-400">{{ n.amount | int }}g</span>
+                </div>
+
+                <h3 class="font-semibold text-slate-800 text-sm mb-3 nutrisi-name">{{ n.nama }}</h3>
+
+                <div class="grid grid-cols-2 gap-1.5 mb-3">
+                    <div class="bg-slate-50 rounded-lg px-2.5 py-1.5">
+                        <p class="font-mono text-xs text-orange-500 font-medium">{{ n.kalori | int if n.kalori else '—' }}</p>
+                        <p class="text-xs text-slate-400">kkal</p>
+                    </div>
+                    <div class="bg-slate-50 rounded-lg px-2.5 py-1.5">
+                        <p class="font-mono text-xs text-blue-500 font-medium">{{ n.karbohidrat | round(1) if n.karbohidrat else '—' }}{% if n.karbohidrat %}g{% endif %}</p>
+                        <p class="text-xs text-slate-400">karbo</p>
+                    </div>
+                    <div class="bg-slate-50 rounded-lg px-2.5 py-1.5">
+                        <p class="font-mono text-xs text-emerald-500 font-medium">{{ n.protein | round(1) if n.protein else '—' }}{% if n.protein %}g{% endif %}</p>
+                        <p class="text-xs text-slate-400">protein</p>
+                    </div>
+                    <div class="bg-slate-50 rounded-lg px-2.5 py-1.5">
+                        <p class="font-mono text-xs text-amber-500 font-medium">{{ n.lemak | round(1) if n.lemak else '—' }}{% if n.lemak %}g{% endif %}</p>
+                        <p class="text-xs text-slate-400">lemak</p>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-xs text-slate-400">oleh {{ n.user.nama }}</span>
+                    <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- No Result Search -->
+        <div id="no-result" class="hidden bg-white border border-slate-200 rounded-2xl p-10 text-center mt-4">
+            <p class="text-slate-500 text-sm">Tidak ditemukan bahan "<span id="keyword" class="font-medium"></span>"</p>
+        </div>
+
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <p class="font-mono text-center text-slate-400 text-xs pb-8">v1.0 · NutriApp © 2025</p>
+
+    <script>
+        function filterBahan(q) {
+            const items = document.querySelectorAll('.nutrisi-item');
+            const noResult = document.getElementById('no-result');
+            const keyword = document.getElementById('keyword');
+            let found = 0;
+            q = q.toLowerCase();
+            
+            items.forEach(item => {
+                const name = item.querySelector('.nutrisi-name').textContent.toLowerCase();
+                if (name.includes(q)) {
+                    item.style.display = '';
+                    found++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            if (keyword) keyword.textContent = q;
+            
+            if (found === 0 && q !== '') {
+                noResult.classList.remove('hidden');
+            } else {
+                noResult.classList.add('hidden');
+            }
+        }
+    </script>
+
+</body>
+</html>

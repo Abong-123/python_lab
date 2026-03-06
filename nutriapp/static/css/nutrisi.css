@@ -1,0 +1,125 @@
+/* ===== BASE STYLES ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.font-mono {
+    font-family: 'DM Mono', monospace;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nutrisi-item {
+    animation: fadeIn 0.4s ease forwards;
+    opacity: 0;
+}
+
+/* Delay untuk setiap item */
+{% for i in range(20) %}
+.nutrisi-item:nth-child({{ loop.index }}) {
+    animation-delay: {{ loop.index0 * 0.03 }}s;
+}
+{% endfor %}
+
+/* ===== CARD STYLES ===== */
+.nutrisi-item {
+    transition: all 0.2s ease;
+}
+
+.nutrisi-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+}
+
+/* ===== NUTRIENT COLORS ===== */
+.text-orange-500 { color: #f97316; }
+.text-blue-500 { color: #3b82f6; }
+.text-emerald-500 { color: #10b981; }
+.text-amber-500 { color: #f59e0b; }
+
+.bg-orange-50 { background-color: #fff7ed; }
+.bg-blue-50 { background-color: #eff6ff; }
+.bg-emerald-50 { background-color: #ecfdf5; }
+.bg-amber-50 { background-color: #fffbeb; }
+
+/* ===== SEARCH FIELD ===== */
+#search {
+    transition: all 0.2s ease;
+}
+
+#search:focus {
+    outline: none;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+/* ===== EMPTY STATE ===== */
+.bg-slate-100 {
+    background-color: #f1f5f9;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+    .max-w-4xl {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    #search {
+        width: 100%;
+    }
+}
+
+/* ===== UTILITY OVERRIDES ===== */
+.text-slate-800 { color: #1e293b; }
+.text-slate-600 { color: #475569; }
+.text-slate-500 { color: #64748b; }
+.text-slate-400 { color: #94a3b8; }
+.text-slate-300 { color: #cbd5e1; }
+
+.bg-slate-50 { background-color: #f8fafc; }
+.border-slate-200 { border-color: #e2e8f0; }
+.border-slate-100 { border-color: #f1f5f9; }
+
+/* ===== BUTTON STYLES ===== */
+.bg-sky-500 {
+    background-color: #0ea5e9;
+}
+
+.bg-sky-500:hover {
+    background-color: #0284c7;
+}
+
+/* ===== GRID GAP ===== */
+.gap-4 {
+    gap: 1rem;
+}
+
+/* ===== HOVER EFFECTS ===== */
+.hover\:border-sky-200:hover {
+    border-color: #bae6fd;
+}
+
+.hover\:shadow-md:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.hover\:-translate-y-1:hover {
+    transform: translateY(-4px);
+}
