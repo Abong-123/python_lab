@@ -26,7 +26,7 @@ from security import hash_password, verify_password
 app = FastAPI()
 app.add_middleware(
     SessionMiddleware,
-    secret_key="SECRET_YANG_RAHASIA_BANGET",
+    secret_key=os.getenv("SECRET_KEY", "SECRET_YANG_RAHASIA_BANGET"),
 )
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
