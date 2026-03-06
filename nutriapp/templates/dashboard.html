@@ -70,7 +70,9 @@
                     <div class="action-icon">🍳</div>
                     <h3 class="action-title">Buat Resep Baru</h3>
                     <p class="action-desc">Catat resep sehat favoritmu</p>
-                    <button class="action-btn">Mulai</button>
+                    <a href="/resep/input">
+                        <button class="action-btn">Mulai</button>
+                    </a>
                 </div>
 
                 <div class="action-card">
@@ -83,8 +85,10 @@
                 <div class="action-card">
                     <div class="action-icon">📚</div>
                     <h3 class="action-title">Koleksi Resep</h3>
-                    <p class="action-desc">Lihat semua resepmu</p>
-                    <button class="action-btn">Lihat</button>
+                    <p class="action-desc">Lihat semua resep</p>
+                    <a href="/resep">
+                        <button class="action-btn">Lihat</button>
+                    </a>
                 </div>
 
                 {% if user.role.value == 'ahli_gizi' or user.role.value == 'admin' %}

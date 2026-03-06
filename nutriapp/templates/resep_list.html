@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daftar Resep — NutriApp</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../static/css/resep_list.css">
+</head>
+<body class="bg-base min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-40 border-b border-white/5 backdrop-blur-xl bg-black/20">
+    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="/dashboard" class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-md bg-orange-500 flex items-center justify-center">
+          <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+        </div>
+        <span class="mono text-orange-400 text-xs font-medium tracking-widest uppercase">NutriApp</span>
+      </a>
+      <a href="/resep/input" class="btn-add flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Buat Resep
+      </a>
+    </div>
+  </nav>
+
+  <div class="max-w-5xl mx-auto px-4 py-8">
+
+    <!-- Header -->
+    <div class="f1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-xl font-bold text-white">Daftar Resep</h1>
+        <p class="text-slate-500 text-sm mt-0.5">{{ reseps | length }} resep tersedia</p>
+      </div>
+      <!-- Search -->
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" id="search" placeholder="Cari resep..."
+          class="search-field rounded-xl pl-10 pr-4 py-2.5 text-sm w-64"
+          oninput="filterResep()"/>
+      </div>
+    </div>
+
+    <!-- Filter tipe -->
+    <div class="f1 flex flex-wrap gap-2 mb-6" id="filter-container">
+      <button class="filter-btn active px-3 py-1.5 rounded-lg text-xs font-medium" onclick="setFilter('', this)">Semua</button>
+      <button class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium" onclick="setFilter('sarapan', this)">Sarapan</button>
+      <button class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium" onclick="setFilter('makan_siang', this)">Makan Siang</button>
+      <button class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium" onclick="setFilter('makan_malam', this)">Makan Malam</button>
+      <button class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium" onclick="setFilter('camilan', this)">Camilan</button>
+      <button class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium" onclick="setFilter('minuman', this)">Minuman</button>
+      <button class="filter-btn px-3 py-1.5 rounded-lg text-xs font-medium" onclick="setFilter('sup', this)">Sup</button>
+    </div>
+
+    {% if not reseps %}
+    <!-- Empty -->
+    <div class="f2 card rounded-2xl p-12 text-center">
+      <div class="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+      </div>
+      <p class="text-slate-400 font-medium mb-1">Belum ada resep</p>
+      <p class="text-slate-600 text-sm mb-5">Jadilah yang pertama berbagi resep!</p>
+      <a href="/resep/input" class="btn-add inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white">
+        + Buat Resep
+      </a>
+    </div>
+
+    {% else %}
+
+    <!-- Grid -->
+    <div id="resep-grid" class="f2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for r in reseps %}
+      <a href="/resep/{{ r.id }}"
+         class="card rounded-2xl overflow-hidden block resep-item"
+         data-nama="{{ r.nama | lower }}"
+         data-tipe="{{ r.tipe or '' }}"
+         style="animation-delay: {{ loop.index0 * 0.04 }}s">
+
+        <!-- Foto atau placeholder -->
+        {% if r.foto %}
+        <img src="{{ r.foto }}" alt="{{ r.nama }}" class="w-full h-44 object-cover"/>
+        {% else %}
+        <div class="w-full h-44 bg-gradient-to-br from-orange-500/10 to-orange-900/20 flex items-center justify-center">
+          <svg class="w-10 h-10 text-orange-500/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        {% endif %}
+
+        <div class="p-4">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="font-semibold text-white text-sm leading-snug">{{ r.nama }}</h3>
+            {% if r.tipe %}
+            <span class="tipe-badge mono text-xs px-2 py-0.5 rounded-full shrink-0">{{ r.tipe }}</span>
+            {% endif %}
+          </div>
+
+          {% if r.deskripsi %}
+          <p class="text-slate-500 text-xs leading-relaxed mb-3 line-clamp-2">{{ r.deskripsi }}</p>
+          {% endif %}
+
+          <!-- Makro ringkas -->
+          <div class="grid grid-cols-3 gap-1.5 mb-3">
+            <div class="bg-white/[0.03] rounded-lg px-2 py-1.5 text-center">
+              <p class="mono text-xs text-orange-400 font-medium">{{ r.kalori | int if r.kalori else '—' }}</p>
+              <p class="text-xs text-slate-600">kkal</p>
+            </div>
+            <div class="bg-white/[0.03] rounded-lg px-2 py-1.5 text-center">
+              <p class="mono text-xs text-emerald-400 font-medium">{{ r.protein | round(1) if r.protein else '—' }}{% if r.protein %}g{% endif %}</p>
+              <p class="text-xs text-slate-600">protein</p>
+            </div>
+            <div class="bg-white/[0.03] rounded-lg px-2 py-1.5 text-center">
+              <p class="mono text-xs text-blue-400 font-medium">{{ r.karbohidrat | round(1) if r.karbohidrat else '—' }}{% if r.karbohidrat %}g{% endif %}</p>
+              <p class="text-xs text-slate-600">karbo</p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-white/5">
+            <div class="flex items-center gap-1.5">
+              <img src="{{ r.user.photo if r.user.photo else 'https://ui-avatars.com/api/?name=' + r.user.nama + '&background=f97316&color=fff&size=32' }}"
+                   class="w-5 h-5 rounded-full object-cover"/>
+              <span class="text-xs text-slate-600">{{ r.user.nama }}</span>
+            </div>
+            {% if r.bahan_utama %}
+            <span class="text-xs text-slate-600">🥩 {{ r.bahan_utama }}</span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- No result -->
+    <div id="no-result" class="hidden card rounded-2xl p-10 text-center mt-4">
+      <p class="text-slate-500 text-sm">Tidak ditemukan resep yang cocok</p>
+    </div>
+
+    {% endif %}
+  </div>
+
+  <p class="mono text-center text-slate-700 text-xs pb-8">v1.0 · NutriApp © 2025</p>
+
+  <script>
+    let activeFilter = '';
+
+    function setFilter(tipe, btn) {
+      activeFilter = tipe;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterResep();
+    }
+
+    function filterResep() {
+      const q = document.getElementById('search').value.toLowerCase();
+      const items = document.querySelectorAll('.resep-item');
+      let found = 0;
+      items.forEach(item => {
+        const nama = item.dataset.nama || '';
+        const tipe = item.dataset.tipe || '';
+        const matchQ = nama.includes(q);
+        const matchF = activeFilter === '' || tipe === activeFilter;
+        if (matchQ && matchF) { item.style.display = ''; found++; }
+        else item.style.display = 'none';
+      });
+      const noResult = document.getElementById('no-result');
+      if (noResult) noResult.classList.toggle('hidden', found > 0);
+    }
+  </script>
+</body>
+</html>

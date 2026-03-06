@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Buat Resep — NutriApp</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../static/css/resep_input.css">
+</head>
+<body class="bg-base min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-40 border-b border-white/5 backdrop-blur-xl bg-black/20">
+    <div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="/dashboard" class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-md bg-orange-500 flex items-center justify-center">
+          <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+        </div>
+        <span class="mono text-orange-400 text-xs font-medium tracking-widest uppercase">NutriApp</span>
+      </a>
+      <a href="/resep" class="btn-back flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm">
+        ← Daftar Resep
+      </a>
+    </div>
+  </nav>
+
+  <div class="max-w-3xl mx-auto px-4 py-8">
+
+    <!-- Header -->
+    <div class="f1 flex items-center gap-3 mb-8">
+      <div class="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+        <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-zinc-700">Buat Resep Baru</h1>
+        <p class="text-slate-600 text-xs">Isi detail resep dan pilih bahan dari database</p>
+      </div>
+    </div>
+
+    {% if error %}
+    <div class="f1 mb-5 flex items-center gap-3 bg-red-500/10 border border-red-500/25 text-red-400 rounded-xl px-4 py-3 text-sm">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post" action="/resep/input" enctype="multipart/form-data" class="space-y-5">
+
+      <!-- Info Dasar -->
+      <div class="card rounded-2xl p-6 f2">
+        <h2 class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-4">Informasi Resep</h2>
+        <div class="space-y-4">
+
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Nama Resep <span class="text-red-400">*</span></label>
+            <input type="text" name="nama" required placeholder="cth: Nasi Goreng Spesial"
+              class="input-field rounded-xl px-4 py-3 text-sm"/>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-2 uppercase tracking-wider">Tipe Masakan</label>
+              <select name="tipe" class="input-field select-bahan rounded-xl px-4 py-3 text-sm">
+                <option value="">— Pilih tipe —</option>
+                <option value="sarapan">Sarapan</option>
+                <option value="makan_siang">Makan Siang</option>
+                <option value="makan_malam">Makan Malam</option>
+                <option value="camilan">Camilan</option>
+                <option value="minuman">Minuman</option>
+                <option value="sup">Sup</option>
+                <option value="salad">Salad</option>
+                <option value="lainnya">Lainnya</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-2 uppercase tracking-wider">Bahan Utama</label>
+              <input type="text" name="bahan_utama" placeholder="cth: Ayam, Tempe, Tahu..."
+                class="input-field rounded-xl px-4 py-3 text-sm"/>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-2 uppercase tracking-wider">Deskripsi</label>
+            <textarea name="deskripsi" rows="2" placeholder="Ceritakan sedikit tentang resep ini..."
+              class="input-field rounded-xl px-4 py-3 text-sm resize-none"></textarea>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Foto -->
+      <div class="card rounded-2xl p-6 f2">
+        <h2 class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-4">Foto Resep</h2>
+        <div class="flex items-center gap-4">
+          <img id="foto-preview" src="" alt="" class="foto-preview w-24 h-24 rounded-xl object-cover border border-white/10"/>
+          <div>
+            <button type="button" onclick="document.getElementById('foto').click()"
+              class="text-sm text-orange-400 border border-orange-500/30 hover:bg-orange-500/10 px-4 py-2 rounded-xl transition-colors">
+              Pilih Foto
+            </button>
+            <p class="text-xs text-slate-700 mt-2">JPG, PNG. Opsional.</p>
+            <input type="file" id="foto" name="foto" accept="image/*" class="hidden" onchange="previewFoto(event)"/>
+          </div>
+        </div>
+      </div>
+
+        <!-- Bahan dari Database -->
+        <div class="card rounded-2xl p-6 f3">
+        <div class="flex items-center justify-between mb-1">
+            <h2 class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Bahan Makanan</h2>
+            <span class="mono text-xs text-slate-600">dari database nutrisi</span>
+        </div>
+        <p class="text-xs text-slate-600 mb-4">Cari bahan lalu tentukan gramnya — kalori dihitung otomatis</p>
+
+        <!-- Search box -->
+        <div class="relative mb-4">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-700 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input
+            type="text" id="bahan-search"
+            placeholder="Ketik nama bahan... cth: ayam, tempe, nasi"
+            class="input-field rounded-xl pl-10 pr-4 py-3 text-sm"
+            autocomplete="off"
+            oninput="cariNutrisi(this.value)"
+            onkeydown="handleSearchKey(event)"
+            />
+            <!-- Dropdown hasil pencarian -->
+            <div id="search-results"
+            class="absolute z-50 w-full mt-1 rounded-xl overflow-hidden shadow-2xl hidden"
+            style="background:#111820; border:1px solid rgba(255,255,255,0.1);">
+            </div>
+        </div>
+
+        <!-- Daftar bahan yang sudah dipilih -->
+        <div id="bahan-container" class="space-y-2 mb-3"></div>
+
+        <!-- Kalori estimasi -->
+        <div id="kalori-info" class="card-orange rounded-xl px-4 py-3 mt-2 hidden">
+            <div class="flex items-center justify-between">
+            <span class="text-xs text-orange-400">Estimasi kalori total</span>
+            <span class="mono text-sm font-bold text-orange-300" id="total-kalori">0 kkal</span>
+            </div>
+        </div>
+        </div>
+
+      <!-- Bumbu (teks bebas) -->
+      <div class="card rounded-2xl p-6 f3">
+        <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Bumbu & Pelengkap</h2>
+        <p class="text-xs text-slate-600 mb-4">Tulis bebas — bumbu tidak dihitung kalorinya</p>
+        <textarea name="bumbu" rows="3"
+          placeholder="cth: 3 siung bawang putih, 1 sdt garam, 2 sdm kecap manis, merica secukupnya..."
+          class="input-field rounded-xl px-4 py-3 text-sm resize-none"></textarea>
+      </div>
+
+      <!-- Cara Memasak -->
+    <!-- Cara Memasak -->
+        <div class="card rounded-2xl p-6 f4">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cara Memasak</h2>
+                <span class="mono text-xs text-slate-600" id="step-count">0 langkah</span>
+            </div>
+
+            <div id="steps-container" class="space-y-2 mb-3"></div>
+
+            <button type="button" onclick="addStep()"
+                class="btn-add-bahan flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm w-full">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Tambah Langkah
+            </button>
+
+            <!-- Hidden input yang dikirim ke backend -->
+            <input type="hidden" name="cara_memasak" id="cara-memasak-value"/>
+        </div>
+
+      <!-- Keterangan -->
+      <div class="card rounded-2xl p-6 f4">
+        <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Keterangan Tambahan</h2>
+        <textarea name="keterangan" rows="2"
+          placeholder="Tips, variasi, atau catatan khusus..."
+          class="input-field rounded-xl px-4 py-3 text-sm resize-none"></textarea>
+      </div>
+
+      <!-- Submit -->
+      <div class="f5 flex gap-3">
+        <a href="/resep" class="btn-back flex-1 text-center py-3 rounded-xl text-sm font-medium">
+          Batal
+        </a>
+        <button type="submit" class="btn-submit flex-1 text-white font-semibold py-3 rounded-xl text-sm">
+          Simpan Resep
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <p class="mono text-center text-slate-700 text-xs pb-8">v1.0 · NutriApp © 2025</p>
+
+  <!-- Data bahan untuk JS -->
+<script>
+  let steps = [];
+
+  function addStep(text = '') {
+    steps.push(text);
+    renderSteps();
+    // Focus ke input yang baru
+    setTimeout(() => {
+      const inputs = document.querySelectorAll('.step-input');
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    }, 50);
+  }
+
+  function removeStep(index) {
+    steps.splice(index, 1);
+    renderSteps();
+  }
+
+  function updateStep(index, val) {
+    steps[index] = val;
+    syncCaraMemasak();
+  }
+
+  function moveStep(index, dir) {
+    const target = index + dir;
+    if (target < 0 || target >= steps.length) return;
+    [steps[index], steps[target]] = [steps[target], steps[index]];
+    renderSteps();
+  }
+
+  function renderSteps() {
+    const container = document.getElementById('steps-container');
+    document.getElementById('step-count').textContent = steps.length + ' langkah';
+
+    if (!steps.length) {
+      container.innerHTML = `
+        <p class="text-xs text-slate-600 text-center py-3">Belum ada langkah — klik "Tambah Langkah"</p>
+      `;
+      syncCaraMemasak();
+      return;
+    }
+
+    container.innerHTML = steps.map((s, i) => `
+      <div class="flex items-start gap-2">
+        <!-- Nomor -->
+        <div class="shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-2 mono text-xs font-semibold"
+          style="background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.25); color:#fb923c">
+          ${i + 1}
+        </div>
+
+        <!-- Input -->
+        <textarea
+          class="step-input input-field rounded-xl px-3 py-2 text-sm resize-none flex-1"
+          rows="2"
+          placeholder="Tulis langkah ${i + 1}..."
+          oninput="updateStep(${i}, this.value); autoResize(this)"
+        >${s}</textarea>
+
+        <!-- Controls -->
+        <div class="flex flex-col gap-1 shrink-0 mt-1">
+          <button type="button" onclick="moveStep(${i}, -1)" ${i === 0 ? 'disabled' : ''}
+            class="w-6 h-6 rounded-md flex items-center justify-center transition-colors ${i === 0 ? 'opacity-20 cursor-not-allowed' : 'hover:bg-white/10'}"
+            style="border:1px solid rgba(255,255,255,0.08); color:#64748b">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+            </svg>
+          </button>
+          <button type="button" onclick="moveStep(${i}, 1)" ${i === steps.length - 1 ? 'disabled' : ''}
+            class="w-6 h-6 rounded-md flex items-center justify-center transition-colors ${i === steps.length - 1 ? 'opacity-20 cursor-not-allowed' : 'hover:bg-white/10'}"
+            style="border:1px solid rgba(255,255,255,0.08); color:#64748b">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <button type="button" onclick="removeStep(${i})"
+            class="w-6 h-6 rounded-md flex items-center justify-center transition-colors hover:bg-red-500/10"
+            style="border:1px solid rgba(239,68,68,0.2); color:#f87171">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    syncCaraMemasak();
+  }
+
+  function syncCaraMemasak() {
+    // Gabungkan steps jadi string "1. ...\n2. ..."
+    const val = steps
+      .map((s, i) => `${i + 1}. ${s.trim()}`)
+      .filter(s => s.trim() !== `${steps.indexOf(s.split('. ')[1]) + 1}.`)
+      .join('\n');
+    document.getElementById('cara-memasak-value').value = steps
+      .map((s, i) => `${i + 1}. ${s.trim()}`)
+      .join('\n');
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+
+  // Init — parse cara_memasak yang sudah ada (untuk edit)
+  steps = [];
+  renderSteps();
+
+  // Sync sebelum submit
+  document.querySelector('form').addEventListener('submit', syncCaraMemasak);
+</script>
+
+  <script>
+  // Data semua nutrisi dari backend
+  const allNutrisi = [
+    {% for n in nutrisis %}
+    { id: {{ n.id }}, nama: "{{ n.nama }}", kalori: {{ n.kalori or 0 }}, amount: {{ n.amount }} },
+    {% endfor %}
+  ];
+
+  // Bahan yang sudah dipilih { id, nama, kalori, amount, gram }
+  let selectedBahan = [];
+  let searchIndex = -1;
+
+  function cariNutrisi(q) {
+    const box = document.getElementById('search-results');
+    searchIndex = -1;
+    if (!q.trim()) { box.classList.add('hidden'); return; }
+
+    const hasil = allNutrisi.filter(n =>
+      n.nama.toLowerCase().includes(q.toLowerCase()) &&
+      !selectedBahan.find(s => s.id === n.id)
+    ).slice(0, 8);
+
+    if (!hasil.length) {
+      box.innerHTML = `<div class="px-4 py-3 text-sm text-slate-500">Tidak ditemukan</div>`;
+      box.classList.remove('hidden');
+      return;
+    }
+
+    box.innerHTML = hasil.map((n, i) => `
+      <div
+        class="search-item px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+        data-index="${i}"
+        onclick="pilihBahan(${n.id})"
+      >
+        <span class="text-sm text-slate-200">${n.nama}</span>
+        <span class="mono text-xs text-slate-500">${n.kalori ? Math.round(n.kalori) + ' kkal/' + n.amount + 'g' : '—'}</span>
+      </div>
+    `).join('');
+
+    box._data = hasil;
+    box.classList.remove('hidden');
+  }
+
+  function handleSearchKey(e) {
+    const box = document.getElementById('search-results');
+    const items = box.querySelectorAll('.search-item');
+    if (!items.length) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      searchIndex = Math.min(searchIndex + 1, items.length - 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      searchIndex = Math.max(searchIndex - 1, 0);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (searchIndex >= 0 && box._data[searchIndex]) {
+        pilihBahan(box._data[searchIndex].id);
+      } else if (box._data && box._data[0]) {
+        pilihBahan(box._data[0].id);
+      }
+      return;
+    } else if (e.key === 'Escape') {
+      box.classList.add('hidden');
+      return;
+    }
+
+    items.forEach((item, i) => {
+      item.classList.toggle('bg-white/5', i === searchIndex);
+    });
+  }
+
+  function pilihBahan(id) {
+    const nutrisi = allNutrisi.find(n => n.id === id);
+    if (!nutrisi || selectedBahan.find(s => s.id === id)) return;
+
+    selectedBahan.push({ ...nutrisi, gram: '' });
+    renderBahan();
+
+    // Reset search
+    document.getElementById('bahan-search').value = '';
+    document.getElementById('search-results').classList.add('hidden');
+
+    // Focus input gram bahan yang baru ditambah
+    setTimeout(() => {
+      const inputs = document.querySelectorAll('.gram-input');
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    }, 50);
+  }
+
+  function removeBahan(id) {
+    selectedBahan = selectedBahan.filter(b => b.id !== id);
+    renderBahan();
+    hitungKalori();
+  }
+
+  function updateGram(id, val) {
+    const b = selectedBahan.find(b => b.id === id);
+    if (b) { b.gram = val; hitungKalori(); }
+  }
+
+  function renderBahan() {
+    const container = document.getElementById('bahan-container');
+
+    if (!selectedBahan.length) {
+      container.innerHTML = `
+        <p class="text-xs text-slate-600 text-center py-3">Belum ada bahan dipilih</p>
+      `;
+      // Hapus hidden input lama
+      document.querySelectorAll('.hidden-nutrisi-id, .hidden-bahan-amount').forEach(e => e.remove());
+      hitungKalori();
+      return;
+    }
+
+    container.innerHTML = selectedBahan.map(b => `
+      <div class="flex items-center gap-2 p-3 rounded-xl" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06)">
+        <div class="flex-1 min-w-0">
+          <p class="text-sm text-slate-200 truncate">${b.nama}</p>
+          <p class="mono text-xs text-slate-600">${b.kalori ? Math.round(b.kalori) + ' kkal per ' + b.amount + 'g' : 'kalori tidak tersedia'}</p>
+        </div>
+        <div class="relative shrink-0">
+          <input
+            type="number" step="0.1" min="0"
+            value="${b.gram}"
+            placeholder="gram"
+            class="gram-input input-field rounded-lg px-3 py-2 pr-8 text-sm text-right"
+            style="width:90px"
+            oninput="updateGram(${b.id}, this.value)"
+          />
+          <span class="absolute right-2 top-1/2 -translate-y-1/2 mono text-xs text-slate-500">g</span>
+        </div>
+        <button type="button" onclick="removeBahan(${b.id})"
+          class="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+          style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:#f87171">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    `).join('');
+
+    // Sync hidden inputs untuk dikirim ke form
+    syncHiddenInputs();
+    hitungKalori();
+  }
+
+  function syncHiddenInputs() {
+    // Hapus yang lama
+    document.querySelectorAll('.hidden-nutrisi-id, .hidden-bahan-amount').forEach(e => e.remove());
+    const form = document.querySelector('form');
+    selectedBahan.forEach(b => {
+      const nid = document.createElement('input');
+      nid.type = 'hidden'; nid.name = 'nutrisi_id';
+      nid.value = b.id; nid.className = 'hidden-nutrisi-id';
+      const amt = document.createElement('input');
+      amt.type = 'hidden'; amt.name = 'bahan_amount';
+      amt.value = b.gram || 0; amt.className = 'hidden-bahan-amount';
+      form.appendChild(nid);
+      form.appendChild(amt);
+    });
+  }
+
+  function hitungKalori() {
+    // Sync gram terbaru dari input yang tampil
+    document.querySelectorAll('.gram-input').forEach((inp, i) => {
+      if (selectedBahan[i]) selectedBahan[i].gram = inp.value;
+    });
+    syncHiddenInputs();
+
+    let total = 0;
+    selectedBahan.forEach(b => {
+      const gram = parseFloat(b.gram) || 0;
+      if (gram > 0 && b.kalori && b.amount) {
+        total += (b.kalori / b.amount) * gram;
+      }
+    });
+
+    const info = document.getElementById('kalori-info');
+    const label = document.getElementById('total-kalori');
+    if (total > 0) {
+      info.classList.remove('hidden');
+      label.textContent = Math.round(total) + ' kkal';
+    } else {
+      info.classList.add('hidden');
+    }
+  }
+
+  // Tutup dropdown kalau klik di luar
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#bahan-search') && !e.target.closest('#search-results')) {
+      document.getElementById('search-results').classList.add('hidden');
+    }
+  });
+
+  // Sync sebelum submit
+  document.querySelector('form').addEventListener('submit', () => {
+    document.querySelectorAll('.gram-input').forEach((inp, i) => {
+      if (selectedBahan[i]) selectedBahan[i].gram = inp.value;
+    });
+    syncHiddenInputs();
+  });
+
+  // Init render
+  renderBahan();
+</script>
+
+
+
+</body>
+</html>

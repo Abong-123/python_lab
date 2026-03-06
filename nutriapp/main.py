@@ -36,7 +36,6 @@ app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), na
 templates = Jinja2Templates(directory="templates")
 
 
-
 #------------------------------- Jinja -----------------------------------#
 @app.get("/register", response_class=HTMLResponse)
 def register_form(request: Request):
@@ -211,9 +210,6 @@ async def update_profile(
     request.session["user_name"] = user.nama
     return RedirectResponse(url="/profile", status_code=303)
 
-@app.get("/resep", response_class=HTMLResponse)
-def list_resep(request: Request, db: Session = Depends(get_db)):
-
     reseps = db.query(
         Resep.id,
         Resep.nama,
@@ -229,8 +225,7 @@ def list_resep(request: Request, db: Session = Depends(get_db)):
         }
     )
 
-@app.get("/resep/{id}", response_class=HTMLResponse)
-def resep_detail(id: int, request: Request, db: Session = Depends(get_db)):
+
 
     resep = db.query(Resep).filter(Resep.id == id).first()
 
@@ -245,6 +240,224 @@ def resep_detail(id: int, request: Request, db: Session = Depends(get_db)):
         }
     )
 
+@app.get("/resep", response_class=HTMLResponse)
+def resep_list(request: Request, db: Session = Depends(get_db)):
+    if "user_id" not in request.session:
+        return RedirectResponse(url="/login", status_code=303)
+    user = db.query(models.User).filter(models.User.id == request.session["user_id"]).first()
+    reseps = db.query(models.Resep).order_by(models.Resep.nama).all()
+    return templates.TemplateResponse("resep_list.html", {
+        "request": request, "user": user, "reseps": reseps
+    })
+
+
+@app.get("/resep/input", response_class=HTMLResponse)
+def resep_input_form(request: Request, db: Session = Depends(get_db)):
+    if "user_id" not in request.session:
+        return RedirectResponse(url="/login", status_code=303)
+    user = db.query(models.User).filter(models.User.id == request.session["user_id"]).first()
+    # Ambil semua bahan dari database untuk dropdown
+    nutrisis = db.query(models.Nutrisi).order_by(models.Nutrisi.nama).all()
+    return templates.TemplateResponse("resep_input.html", {
+        "request": request, "user": user, "nutrisis": nutrisis
+    })
+
+
+@app.post("/resep/input")
+async def resep_input(
+    request: Request,
+    nama: str = Form(...),
+    deskripsi: str = Form(None),
+    tipe: str = Form(None),
+    bahan_utama: str = Form(None),
+    keterangan: str = Form(None),
+    bumbu: str = Form(None),        # teks bebas
+    cara_memasak: str = Form(None),
+    foto: UploadFile = File(None),
+    db: Session = Depends(get_db)
+):
+    if "user_id" not in request.session:
+        return RedirectResponse(url="/login", status_code=303)
+    user = db.query(models.User).filter(models.User.id == request.session["user_id"]).first()
+
+    # Ambil bahan + amount dari form (dikirim sebagai list)
+    form_data = await request.form()
+    nutrisi_ids = form_data.getlist("nutrisi_id")    # ["1","3","5"]
+    amounts     = form_data.getlist("bahan_amount")  # ["100","50","200"]
+
+    # Upload foto
+    foto_url = None
+    if foto and foto.filename != "":
+        result = cloudinary.uploader.upload(
+            await foto.read(),
+            folder="nutriapp/resep",
+            overwrite=True,
+            resource_type="image"
+        )
+        foto_url = result["secure_url"]
+
+    # Hitung total nutrisi dari bahan yang dipilih
+    total_kalori = total_protein = total_karbo = total_lemak = 0.0
+    bahan_list = []
+    for nid, amt in zip(nutrisi_ids, amounts):
+        if not nid or not amt:
+            continue
+        nutrisi = db.query(models.Nutrisi).filter(models.Nutrisi.id == int(nid)).first()
+        if not nutrisi:
+            continue
+        gram = float(amt)
+        ratio = gram / nutrisi.amount if nutrisi.amount else 1
+        total_kalori  += (nutrisi.kalori  or 0) * ratio
+        total_protein += (nutrisi.protein or 0) * ratio
+        total_karbo   += (nutrisi.karbohidrat or 0) * ratio
+        total_lemak   += (nutrisi.lemak   or 0) * ratio
+        bahan_list.append((int(nid), gram))
+
+    resep = models.Resep(
+        user_id      = user.id,
+        nama         = nama,
+        deskripsi    = deskripsi,
+        tipe         = tipe,
+        bahan_utama  = bahan_utama,
+        keterangan   = keterangan,
+        bahan        = bumbu,        # bumbu disimpan di kolom bahan (teks bebas)
+        cara_memasak = cara_memasak,
+        foto         = foto_url,
+        kalori       = round(total_kalori, 2),
+        protein      = round(total_protein, 2),
+        karbohidrat  = round(total_karbo, 2),
+        lemak        = round(total_lemak, 2),
+    )
+    db.add(resep)
+    db.flush()
+
+    # Simpan relasi bahan ke resep_bahans
+    for nid, gram in bahan_list:
+        rb = models.ResepBahan(resep_id=resep.id, nutrisi_id=nid, amount=gram)
+        db.add(rb)
+
+    db.commit()
+    return RedirectResponse(url=f"/resep/{resep.id}", status_code=303)
+
+@app.get("/resep/{id}", response_class=HTMLResponse)
+def resep_detail(id: int, request: Request, db: Session = Depends(get_db)):
+    if "user_id" not in request.session:
+        return RedirectResponse(url="/login", status_code=303)
+    user = db.query(models.User).filter(models.User.id == request.session["user_id"]).first()
+    resep = db.query(models.Resep).filter(models.Resep.id == id).first()
+    if not resep:
+        raise HTTPException(status_code=404)
+    return templates.TemplateResponse("resep_detail.html", {
+        "request": request, "user": user, "resep": resep
+    })
+
+@app.get("/resep/{id}/edit", response_class=HTMLResponse)
+def resep_edit_form(id: int, request: Request, db: Session = Depends(get_db)):
+    if "user_id" not in request.session:
+        return RedirectResponse(url="/login", status_code=303)
+    user = db.query(models.User).filter(models.User.id == request.session["user_id"]).first()
+    resep = db.query(models.Resep).filter(models.Resep.id == id).first()
+    if not resep:
+        raise HTTPException(status_code=404)
+    if resep.user_id != user.id and user.role.value != "admin":
+        raise HTTPException(status_code=403)
+    nutrisis = db.query(models.Nutrisi).order_by(models.Nutrisi.nama).all()
+    return templates.TemplateResponse("resep_edit.html", {
+        "request": request, "user": user, "resep": resep, "nutrisis": nutrisis
+    })
+
+@app.post("/resep/{id}/edit")
+async def resep_edit(
+    id: int,
+    request: Request,
+    nama: str = Form(...),
+    deskripsi: str = Form(None),
+    tipe: str = Form(None),
+    bahan_utama: str = Form(None),
+    keterangan: str = Form(None),
+    bumbu: str = Form(None),
+    cara_memasak: str = Form(None),
+    foto: UploadFile = File(None),
+    db: Session = Depends(get_db)
+):
+    if "user_id" not in request.session:
+        return RedirectResponse(url="/login", status_code=303)
+    user = db.query(models.User).filter(models.User.id == request.session["user_id"]).first()
+    resep = db.query(models.Resep).filter(models.Resep.id == id).first()
+    if not resep:
+        raise HTTPException(status_code=404)
+    if resep.user_id != user.id and user.role.value != "admin":
+        raise HTTPException(status_code=403)
+
+    form_data = await request.form()
+    nutrisi_ids = form_data.getlist("nutrisi_id")
+    amounts     = form_data.getlist("bahan_amount")
+
+    # Upload foto baru kalau ada
+    if foto and foto.filename != "":
+        result = cloudinary.uploader.upload(
+            await foto.read(),
+            folder="nutriapp/resep",
+            public_id=f"resep_{resep.id}",
+            overwrite=True,
+            resource_type="image"
+        )
+        resep.foto = result["secure_url"]
+
+    # Hitung ulang nutrisi
+    total_kalori = total_protein = total_karbo = total_lemak = 0.0
+    bahan_list = []
+    for nid, amt in zip(nutrisi_ids, amounts):
+        if not nid or not amt:
+            continue
+        nutrisi = db.query(models.Nutrisi).filter(models.Nutrisi.id == int(nid)).first()
+        if not nutrisi:
+            continue
+        gram = float(amt)
+        ratio = gram / nutrisi.amount if nutrisi.amount else 1
+        total_kalori  += (nutrisi.kalori  or 0) * ratio
+        total_protein += (nutrisi.protein or 0) * ratio
+        total_karbo   += (nutrisi.karbohidrat or 0) * ratio
+        total_lemak   += (nutrisi.lemak   or 0) * ratio
+        bahan_list.append((int(nid), gram))
+
+    # Update field
+    resep.nama         = nama
+    resep.deskripsi    = deskripsi
+    resep.tipe         = tipe
+    resep.bahan_utama  = bahan_utama
+    resep.keterangan   = keterangan
+    resep.bahan        = bumbu
+    resep.cara_memasak = cara_memasak
+    resep.kalori       = round(total_kalori, 2)
+    resep.protein      = round(total_protein, 2)
+    resep.karbohidrat  = round(total_karbo, 2)
+    resep.lemak        = round(total_lemak, 2)
+
+    # Hapus bahan lama, insert baru
+    db.query(models.ResepBahan).filter(
+        models.ResepBahan.resep_id == resep.id
+    ).delete()
+    for nid, gram in bahan_list:
+        db.add(models.ResepBahan(resep_id=resep.id, nutrisi_id=nid, amount=gram))
+
+    db.commit()
+    return RedirectResponse(url=f"/resep/{id}", status_code=303)
+
+@app.post("/resep/{id}/delete")
+def resep_delete(id: int, request: Request, db: Session = Depends(get_db)):
+    if "user_id" not in request.session:
+        return RedirectResponse(url="/login", status_code=303)
+    user = db.query(models.User).filter(models.User.id == request.session["user_id"]).first()
+    resep = db.query(models.Resep).filter(models.Resep.id == id).first()
+    if not resep:
+        raise HTTPException(status_code=404)
+    if resep.user_id != user.id and user.role.value != "admin":
+        raise HTTPException(status_code=403)
+    db.delete(resep)
+    db.commit()
+    return RedirectResponse(url="/resep", status_code=303)
+
 @app.get("/nutrisi/input", response_class=HTMLResponse)
 def nutrisi_input_form(request: Request, db: Session = Depends(get_db)):
     if "user_id" not in request.session:
@@ -255,7 +468,6 @@ def nutrisi_input_form(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse("nutrisi_input.html", {
         "request": request, "user": user
     })
-
 
 @app.post("/nutrisi/input")
 def nutrisi_input(
@@ -335,7 +547,6 @@ def nutrisi_list(request: Request, db: Session = Depends(get_db)):
         "user": user,
         "nutrisis": nutrisis
     })
-
 
 @app.get("/nutrisi/{id}", response_class=HTMLResponse)
 def nutrisi_detail(id: int, request: Request, db: Session = Depends(get_db)):
