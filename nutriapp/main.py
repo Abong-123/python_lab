@@ -38,6 +38,12 @@ templates = Jinja2Templates(directory="templates")
 
 
 #------------------------------- Jinja -----------------------------------#
+@app.get("/", response_class=HTMLResponse)
+def landing(request: Request):
+    if "user_id" in request.session:
+        return RedirectResponse(url="/dashboard", status_code=303)
+    return templates.TemplateResponse("index.html", {"request": request})
+
 @app.get("/register", response_class=HTMLResponse)
 def register_form(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})

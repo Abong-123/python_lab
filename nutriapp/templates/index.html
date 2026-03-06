@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NutriApp — Makan Cerdas, Hidup Sehat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --cream: #f5f0e8;
+      --dark: #0e0f0c;
+      --green: #2d5a27;
+      --green-light: #4a8a3f;
+      --accent: #c8a96e;
+      --muted: #6b6b5a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    .serif { font-family: 'Instrument Serif', serif; }
+    .mono  { font-family: 'JetBrains Mono', monospace; }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 999; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.5;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 1.25rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.3s, backdrop-filter 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.625rem;
+    }
+    .nav-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--green);
+    }
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+    .nav-links a {
+      font-size: 0.8125rem; color: var(--muted); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--dark); }
+    .btn-nav {
+      background: var(--green);
+      color: white !important;
+      padding: 0.5rem 1.25rem;
+      border-radius: 9999px;
+      font-size: 0.8125rem !important;
+      font-weight: 500;
+      transition: background 0.2s, transform 0.15s !important;
+    }
+    .btn-nav:hover { background: var(--green-light) !important; transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding-top: 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-left {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 5rem 3rem 5rem 5vw;
+    }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(45,90,39,0.08);
+      border: 1px solid rgba(45,90,39,0.15);
+      border-radius: 9999px;
+      padding: 0.375rem 1rem;
+      font-size: 0.75rem;
+      color: var(--green);
+      font-weight: 500;
+      margin-bottom: 2rem;
+      width: fit-content;
+    }
+    .hero-tag-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(3rem, 5vw, 5.5rem);
+      line-height: 1.05;
+      color: var(--dark);
+      margin-bottom: 1.5rem;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--green);
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 420px;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-actions {
+      display: flex; align-items: center; gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--dark);
+      color: white;
+      padding: 0.875rem 2rem;
+      border-radius: 9999px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+    }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      color: var(--dark);
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      border-bottom: 1px solid var(--dark);
+      padding-bottom: 2px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-secondary:hover { color: var(--green); border-color: var(--green); }
+
+    .hero-stats {
+      display: flex; gap: 2.5rem; margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    .stat-item {}
+    .stat-num {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2rem;
+      color: var(--dark);
+      line-height: 1;
+    }
+    .stat-desc {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    /* Hero right — image collage */
+    .hero-right {
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-img-main {
+      position: absolute;
+      top: 8%; right: 5%;
+      width: 62%;
+      border-radius: 1.5rem;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.15);
+      z-index: 2;
+    }
+    .hero-img-main img { width: 100%; height: 420px; object-fit: cover; display: block; }
+
+    .hero-img-side {
+      position: absolute;
+      bottom: 12%; left: 5%;
+      width: 44%;
+      border-radius: 1.25rem;
+      overflow: hidden;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+      z-index: 3;
+    }
+    .hero-img-side img { width: 100%; height: 260px; object-fit: cover; display: block; }
+
+    .hero-badge {
+      position: absolute;
+      top: 18%; left: 8%;
+      background: white;
+      border-radius: 1rem;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      z-index: 4;
+      min-width: 160px;
+    }
+    .hero-badge-label {
+      font-size: 0.65rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.375rem;
+    }
+    .hero-badge-val {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.5rem;
+      color: var(--green);
+    }
+    .hero-badge-sub { font-size: 0.75rem; color: var(--muted); }
+
+    .hero-float-tag {
+      position: absolute;
+      bottom: 28%; right: 3%;
+      background: var(--green);
+      color: white;
+      border-radius: 9999px;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      z-index: 4;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* decorative bg blob */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
+    .blob-1 {
+      width: 400px; height: 400px;
+      background: rgba(45,90,39,0.08);
+      top: -10%; right: -5%;
+    }
+    .blob-2 {
+      width: 300px; height: 300px;
+      background: rgba(200,169,110,0.1);
+      bottom: 5%; left: 45%;
+    }
+
+    /* ── FEATURES ── */
+    .section { padding: 6rem 5vw; }
+    .section-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2rem, 3.5vw, 3.5rem);
+      line-height: 1.1;
+      color: var(--dark);
+      max-width: 600px;
+      margin-bottom: 1rem;
+    }
+    .section-sub {
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.7;
+      max-width: 480px;
+      margin-bottom: 4rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: white;
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.08);
+    }
+    .feature-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .feature-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.25rem;
+      color: var(--dark);
+      margin-bottom: 0.625rem;
+    }
+    .feature-desc {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ── GALLERY ── */
+    .gallery-section { padding: 5rem 5vw; background: var(--dark); }
+    .gallery-section .section-title { color: var(--cream); }
+    .gallery-section .section-sub { color: rgba(245,240,232,0.5); }
+    .gallery-section .section-tag { color: var(--accent); }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-rows: 280px 280px;
+      gap: 1rem;
+    }
+    .gallery-item {
+      border-radius: 1rem;
+      overflow: hidden;
+      position: relative;
+    }
+    .gallery-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .gallery-item:hover img { transform: scale(1.05); }
+    .gallery-item.span-col { grid-row: span 2; }
+    .gallery-item.span-row { grid-column: span 2; }
+
+    .gallery-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%);
+      display: flex; align-items: flex-end;
+      padding: 1.25rem;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .gallery-item:hover .gallery-overlay { opacity: 1; }
+    .gallery-label {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1rem;
+      color: white;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      position: relative;
+    }
+    .steps-grid::before {
+      content: '';
+      position: absolute;
+      top: 28px; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(45,90,39,0.2), transparent);
+    }
+    .step-item { text-align: center; }
+    .step-num {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.375rem;
+      color: white;
+      background: var(--green);
+      margin: 0 auto 1.25rem;
+      position: relative; z-index: 1;
+    }
+    .step-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.125rem;
+      color: var(--dark);
+      margin-bottom: 0.5rem;
+    }
+    .step-desc { font-size: 0.825rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── CTA ── */
+    .cta-section {
+      margin: 0 5vw 6rem;
+      background: var(--green);
+      border-radius: 2rem;
+      padding: 5rem 4rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      top: -100px; right: -100px;
+    }
+    .cta-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2rem, 3vw, 3rem);
+      color: white;
+      line-height: 1.15;
+    }
+    .cta-sub { color: rgba(255,255,255,0.65); font-size: 0.95rem; margin-top: 1rem; line-height: 1.7; }
+    .cta-right { display: flex; flex-direction: column; gap: 1rem; align-items: flex-start; }
+    .btn-cta-white {
+      display: inline-flex; align-items: center; gap: 0.625rem;
+      background: white; color: var(--green);
+      padding: 0.875rem 2rem; border-radius: 9999px;
+      font-size: 0.9rem; font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+    .btn-cta-ghost {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      color: rgba(255,255,255,0.75);
+      font-size: 0.875rem;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      padding-bottom: 2px;
+      transition: color 0.2s;
+    }
+    .btn-cta-ghost:hover { color: white; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--dark);
+      color: rgba(245,240,232,0.5);
+      padding: 3rem 5vw;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    footer .mono { color: rgba(245,240,232,0.3); font-size: 0.75rem; }
+    footer a { color: rgba(245,240,232,0.5); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    footer a:hover { color: var(--cream); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes slideRight {
+      from { opacity: 0; transform: translateX(32px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .anim-up   { animation: fadeUp 0.7s ease both; }
+    .anim-right { animation: slideRight 0.7s ease both; }
+    .anim-in   { animation: fadeIn 0.6s ease both; }
+    .d1 { animation-delay: 0.1s; }
+    .d2 { animation-delay: 0.2s; }
+    .d3 { animation-delay: 0.3s; }
+    .d4 { animation-delay: 0.4s; }
+    .d5 { animation-delay: 0.5s; }
+    .d6 { animation-delay: 0.6s; }
+
+    .float { animation: floatY 4s ease-in-out infinite; }
+    .float-delay { animation: floatY 4s ease-in-out 1s infinite; }
+
+    /* Scroll reveal */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-right { display: none; }
+      .hero-left { padding: 6rem 2rem 3rem; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .steps-grid { grid-template-columns: 1fr 1fr; }
+      .steps-grid::before { display: none; }
+      .cta-section { grid-template-columns: 1fr; padding: 3rem 2rem; }
+      .gallery-grid { grid-template-columns: 1fr 1fr; }
+      .gallery-item.span-col { grid-row: auto; }
+    }
+    @media (max-width: 640px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .gallery-grid { grid-template-columns: 1fr; }
+      .hero-stats { gap: 1.5rem; }
+      nav { padding: 1rem 1.25rem; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav id="navbar">
+    <div class="nav-logo">
+      <div class="nav-dot"></div>
+      <span style="font-family:'Instrument Serif',serif; font-size:1.25rem; color:var(--dark)">NutriApp</span>
+    </div>
+    <div class="nav-links">
+      <a href="#fitur">Fitur</a>
+      <a href="#cara-kerja">Cara Kerja</a>
+      <a href="/resep">Resep</a>
+      <a href="/login">Masuk</a>
+      <a href="/register" class="btn-nav">Mulai Gratis</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="hero-left">
+      <div class="hero-tag anim-up d1">
+        <div class="hero-tag-dot"></div>
+        Platform Nutrisi Indonesia
+      </div>
+
+      <h1 class="hero-title anim-up d2">
+        Makan <em>cerdas,</em><br/>
+        hidup lebih<br/>
+        sehat setiap hari
+      </h1>
+
+      <p class="hero-desc anim-up d3">
+        Rencanakan menu harian, lacak kalori, dan temukan resep bergizi
+        yang disesuaikan dengan kebutuhan tubuhmu.
+      </p>
+
+      <div class="hero-actions anim-up d4">
+        <a href="/register" class="btn-primary">
+          Mulai Sekarang
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </a>
+        <a href="/resep" class="btn-secondary">
+          Lihat Resep
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="hero-stats anim-up d5">
+        <div class="stat-item">
+          <div class="stat-num">500+</div>
+          <div class="stat-desc">Bahan makanan terdata</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">100%</div>
+          <div class="stat-desc">Data nutrisi akurat</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">7 hari</div>
+          <div class="stat-desc">Meal plan mingguan</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image collage -->
+    <div class="hero-right anim-in d3">
+      <div class="hero-badge float">
+        <div class="hero-badge-label">Kalori hari ini</div>
+        <div class="hero-badge-val">1.840</div>
+        <div class="hero-badge-sub">kkal · target 2.000 kkal</div>
+      </div>
+
+      <div class="hero-img-main">
+        <img src="https://res.cloudinary.com/dusv7k9ol/image/upload/v1772813941/nutriapp/landing/food1.jpg"
+             alt="Makanan sehat"/>
+      </div>
+
+      <div class="hero-img-side float-delay">
+        <img src="https://res.cloudinary.com/dusv7k9ol/image/upload/v1772813941/nutriapp/landing/food2.jpg"
+             alt="Resep bergizi"/>
+      </div>
+
+      <div class="hero-float-tag float">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        Meal plan tersimpan
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="fitur">
+    <div class="section-tag reveal">Apa yang bisa kamu lakukan</div>
+    <h2 class="section-title reveal">Semua yang kamu butuhkan dalam satu platform</h2>
+    <p class="section-sub reveal">Dari database nutrisi, resep sehat, hingga perencanaan makan mingguan — semuanya terintegrasi.</p>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(45,90,39,0.08)">🥗</div>
+        <div class="feature-title">Database Nutrisi</div>
+        <p class="feature-desc">Ribuan bahan makanan dengan data kalori, protein, karbohidrat, lemak, serat, sodium, dan kalium yang lengkap.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(200,169,110,0.12)">📖</div>
+        <div class="feature-title">Resep Bergizi</div>
+        <p class="feature-desc">Buat dan bagikan resep dengan kalkulasi nutrisi otomatis berdasarkan bahan yang kamu pilih dari database.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(45,90,39,0.08)">📅</div>
+        <div class="feature-title">Meal Plan Mingguan</div>
+        <p class="feature-desc">Rencanakan menu sarapan, makan siang, makan malam hingga camilan untuk 7 hari ke depan dengan mudah.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(200,169,110,0.12)">🏅</div>
+        <div class="feature-title">Lencana Ahli Gizi</div>
+        <p class="feature-desc">Kontribusi data nutrisi dan dapatkan lencana Ahli Gizi yang memvalidasi keahlianmu di komunitas.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(45,90,39,0.08)">⚡</div>
+        <div class="feature-title">Kalkulasi Otomatis</div>
+        <p class="feature-desc">Kalori dan makronutrien dihitung secara real-time saat kamu menyusun resep atau meal plan harian.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(200,169,110,0.12)">🤝</div>
+        <div class="feature-title">Komunitas Terbuka</div>
+        <p class="feature-desc">Resep dan data nutrisi yang dibuat pengguna bisa diakses semua orang — berbagi manfaat bersama.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section class="gallery-section">
+    <div style="max-width:1100px; margin:0 auto">
+      <div class="section-tag reveal">Inspirasi makanan sehat</div>
+      <h2 class="section-title reveal" style="color:var(--cream); margin-bottom:3rem">
+        Temukan ribuan<br/><em style="color:var(--accent)">resep lezat</em> & bergizi
+      </h2>
+
+      <div class="gallery-grid">
+        <div class="gallery-item span-col reveal">
+          <img src="https://res.cloudinary.com/dusv7k9ol/image/upload/v1772813941/nutriapp/landing/food1.jpg" alt="Food 1"/>
+          <div class="gallery-overlay">
+            <span class="gallery-label">Makanan Sehat Indonesia</span>
+          </div>
+        </div>
+        <div class="gallery-item reveal">
+          <img src="https://res.cloudinary.com/dusv7k9ol/image/upload/v1772813941/nutriapp/landing/food2.jpg" alt="Food 2"/>
+          <div class="gallery-overlay">
+            <span class="gallery-label">Sarapan Bergizi</span>
+          </div>
+        </div>
+        <div class="gallery-item reveal">
+          <img src="https://res.cloudinary.com/dusv7k9ol/image/upload/v1772813942/nutriapp/landing/food3.jpg" alt="Food 3"/>
+          <div class="gallery-overlay">
+            <span class="gallery-label">Makan Siang Seimbang</span>
+          </div>
+        </div>
+        <div class="gallery-item span-row reveal">
+          <img src="https://res.cloudinary.com/dusv7k9ol/image/upload/v1772813942/nutriapp/landing/food3.jpg" alt="Food 3b"/>
+          <div class="gallery-overlay">
+            <span class="gallery-label">Menu Makan Malam</span>
+          </div>
+        </div>
+        <div class="gallery-item reveal">
+          <img src="https://res.cloudinary.com/dusv7k9ol/image/upload/v1772813941/nutriapp/landing/food2.jpg" alt="Food 2b"/>
+          <div class="gallery-overlay">
+            <span class="gallery-label">Camilan Sehat</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" id="cara-kerja">
+    <div style="text-align:center; margin-bottom:3rem">
+      <div class="section-tag reveal" style="display:inline-block">Cara Kerja</div>
+      <h2 class="section-title reveal" style="margin:0 auto; text-align:center">Mulai dalam 4 langkah mudah</h2>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-item reveal">
+        <div class="step-num">1</div>
+        <div class="step-title">Daftar Akun</div>
+        <p class="step-desc">Buat akun gratis dalam hitungan detik. Tidak perlu kartu kredit.</p>
+      </div>
+      <div class="step-item reveal">
+        <div class="step-num">2</div>
+        <div class="step-title">Jelajahi Database</div>
+        <p class="step-desc">Cari bahan makanan dan lihat data nutrisi lengkap yang tersedia.</p>
+      </div>
+      <div class="step-item reveal">
+        <div class="step-num">3</div>
+        <div class="step-title">Buat Resep</div>
+        <p class="step-desc">Susun resep dari bahan yang ada — kalori terhitung otomatis.</p>
+      </div>
+      <div class="step-item reveal">
+        <div class="step-num">4</div>
+        <div class="step-title">Atur Meal Plan</div>
+        <p class="step-desc">Tambahkan resep ke jadwal makan mingguan dan mulai hidup sehat.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-section reveal">
+    <div>
+      <h2 class="cta-title">Siap mulai perjalanan hidup sehatmu?</h2>
+      <p class="cta-sub">Bergabung dengan komunitas NutriApp dan mulai merencanakan pola makan yang lebih baik hari ini.</p>
+    </div>
+    <div class="cta-right">
+      <a href="/register" class="btn-cta-white">
+        Daftar Gratis Sekarang
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </a>
+      <a href="/login" class="btn-cta-ghost">
+        Sudah punya akun? Masuk
+      </a>
+      <p style="font-size:0.75rem; color:rgba(255,255,255,0.4); margin-top:0.5rem">
+        Gratis selamanya · Tanpa iklan · Data aman
+      </p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div>
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem">
+        <div class="nav-dot" style="background:rgba(245,240,232,0.4)"></div>
+        <span style="font-family:'Instrument Serif',serif; color:rgba(245,240,232,0.7); font-size:1.1rem">NutriApp</span>
+      </div>
+      <p class="mono">v1.0 · Platform nutrisi komunitas Indonesia</p>
+    </div>
+    <div style="display:flex; gap:2rem; flex-wrap:wrap">
+      <a href="/resep">Resep</a>
+      <a href="/nutrisi">Database Nutrisi</a>
+      <a href="/mealplan">Meal Plan</a>
+      <a href="/register">Daftar</a>
+      <a href="/login">Masuk</a>
+    </div>
+  </footer>
+
+  <script>
+    // Navbar scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 60);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
