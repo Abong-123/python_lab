@@ -1,7 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "postgresql://appuser:password@localhost:5432/nutriapp"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://appuser:password@localhost/nutriapp")
+
+# Render pakai postgres://, SQLAlchemy butuh postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 engine = create_engine(DATABASE_URL)
 
