@@ -1,0 +1,5 @@
+aiogram
+asyncpg
+sqlalchemy[asyncio]
+python-dotenv
+requests
