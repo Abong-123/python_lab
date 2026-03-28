@@ -1,15 +1,18 @@
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "postgresql://appuser:password@localhost:5432/appdb"
+load_dotenv()
 
-engine = create_engine(DATABASE_URL, echo=True)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-    expire_on_commit=False
+engine = create_engine(DATABASE_URL)
+
+SessionLocal = sessionmaker (
+    autocommit = False,
+    autoflush = False,
+    bind = engine
 )
 
 Base = declarative_base()
@@ -22,10 +25,11 @@ def get_db():
         db.close()
 
 if __name__ == "__main__":
-    def test_connection():
-        try:
-            with engine.connect() as conn:
-                print("database terhubung")
-        except Exception as e:
-            print("error", e)
-    test_connection()
+    try:
+        conn = engine.connect()
+        print("database terhubung")
+        conn.close()
+    
+    except Exception as e:
+        print("error", e)
+        
